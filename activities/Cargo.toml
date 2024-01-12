@@ -7,3 +7,8 @@ edition = "2018"
 
 [dependencies]
 rand = "0.8.4"
+chrono = "0.4.31"
+
+[lib]
+name = "modules"
+path = "src/modules/mod.rs"

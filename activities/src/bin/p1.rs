@@ -71,9 +71,18 @@ impl Bills {
         self.inner.remove(&name).is_some()
     }
 
-    // pub fn edit(&mut self, index: usize, bill: Bill) {
-    //     self.inner[index] = bill;
-    // }
+    pub fn edit(&mut self, name: String, amount: f64) -> bool {
+        // if let Some(x) = self.inner.get_mut(&name) {
+        //     x.amount = amount;
+        // }
+        match self.inner.get_mut(&name) {
+            Some(x) => {
+                x.amount = amount;
+                true
+            }
+            None => false,
+        }
+    }
 
     // pub fn get(&self, index: usize) -> Option<&Bill> {
     //     self.inner.get(index)
@@ -172,6 +181,28 @@ mod menu {
         }
         view_bills(&bills);
     }
+
+    pub fn edit_bill(bills: &mut Bills) {
+        view_bills(&bills);
+        println!("Enter bill name to edit: ");
+        let name = match get_input() {
+            Some(name) => name,
+            None => {
+                println!("No name entered!");
+                return;
+            }
+        };
+        let parse_amount = match get_bill_amount() {
+            Some(amount) => amount,
+            None => return,
+        };
+        if bills.edit(name, parse_amount) {
+            println!("Bill edited!");
+        } else {
+            println!("Bill not found!");
+        };
+        view_bills(&bills);
+    }
 }
 
 enum BillManager {
@@ -179,7 +210,6 @@ enum BillManager {
     View,
     Remove,
     Edit,
-    Back,
     Quit,
 }
 
@@ -190,7 +220,6 @@ impl BillManager {
             "2" => Some(BillManager::View),
             "3" => Some(BillManager::Remove),
             "4" => Some(BillManager::Edit),
-            "5" => Some(BillManager::Back),
             "6" => Some(BillManager::Quit),
             _ => None,
         }
@@ -204,32 +233,35 @@ impl BillManager {
         println!("2) View bills");
         println!("3) Remove bill");
         println!("4) Edit bill");
-        println!("5) Back");
         println!("6) Quit");
         println!("");
     }
 }
 
-fn main() {
-    // let i = get_input();
-    // println!("{:?}", i);
-
+fn run_program() -> Option<()> {
     use menu::*;
     let mut bills = Bills::new();
 
     loop {
         BillManager::show();
         println!("Select from menu: ");
-        let input = get_input().expect("Invalid input");
+        let input = get_input()?;
 
         match BillManager::from_str(&input) {
             Some(BillManager::Add) => add_bill(&mut bills),
             Some(BillManager::View) => view_bills(&bills),
             Some(BillManager::Remove) => remove_bill(&mut bills),
-            Some(BillManager::Edit) => println!("Edit"),
-            Some(BillManager::Back) => println!("Back"),
+            Some(BillManager::Edit) => edit_bill(&mut bills),
             Some(BillManager::Quit) => break,
-            None => println!("Invalid input"),
+            None => println!("Invalid input! Try again!!"),
         }
     }
+    None
+}
+
+fn main() {
+    // let i = get_input();
+    // println!("{:?}", i);
+
+    run_program();
 }

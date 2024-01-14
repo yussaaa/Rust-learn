@@ -29,6 +29,7 @@
 // * A vector is the easiest way to store the bills at stage 1, but a
 //   hashmap will be easier to work with at stages 2 and 3.
 
+use std::collections::HashMap;
 use std::io;
 
 fn get_input() -> Option<String> {
@@ -52,36 +53,38 @@ pub struct Bill {
 }
 
 pub struct Bills {
-    inner: Vec<Bill>,
+    inner: HashMap<String, Bill>,
 }
 
 impl Bills {
     pub fn new() -> Self {
-        Self { inner: vec![] }
+        Self {
+            inner: HashMap::new(),
+        }
     }
 
     pub fn add(&mut self, bill: Bill) {
-        self.inner.push(bill);
+        self.inner.insert(bill.name.to_string(), bill);
     }
 
-    pub fn remove(&mut self, index: usize) {
-        self.inner.remove(index);
+    pub fn remove(&mut self, name: String) -> bool {
+        self.inner.remove(&name).is_some()
     }
 
-    pub fn edit(&mut self, index: usize, bill: Bill) {
-        self.inner[index] = bill;
-    }
+    // pub fn edit(&mut self, index: usize, bill: Bill) {
+    //     self.inner[index] = bill;
+    // }
 
-    pub fn get(&self, index: usize) -> Option<&Bill> {
-        self.inner.get(index)
-    }
+    // pub fn get(&self, index: usize) -> Option<&Bill> {
+    //     self.inner.get(index)
+    // }
 
     pub fn len(&self) -> usize {
         self.inner.len()
     }
 
     pub fn get_all(&self) -> Vec<&Bill> {
-        self.inner.iter().collect()
+        self.inner.values().collect()
     }
 }
 
@@ -129,22 +132,7 @@ mod menu {
                 return;
             }
         };
-        // println!("Bill amount: ");
 
-        // let amount: String = match get_input() {
-        //     Some(amount) => amount,
-        //     None => {
-        //         println!("No amount entered!");
-        //         return;
-        //     }
-        // };
-        // let parse_amount: f64 = match amount.parse() {
-        //     Ok(amount) => amount,
-        //     Err(_) => {
-        //         println!("Invalid amount entered!");
-        //         return;
-        //     }
-        // };
         let parse_amount = match get_bill_amount() {
             Some(amount) => amount,
             None => return,
@@ -165,6 +153,24 @@ mod menu {
             println!("{:?}", bill);
         }
         println!("");
+    }
+
+    pub fn remove_bill(bills: &mut Bills) {
+        view_bills(&bills);
+        println!("Enter bill name to remove: ");
+        let name = match get_input() {
+            Some(name) => name,
+            None => {
+                println!("No name entered!");
+                return;
+            }
+        };
+        if bills.remove(name) {
+            println!("Bill removed!");
+        } else {
+            println!("Bill not found!");
+        }
+        view_bills(&bills);
     }
 }
 
@@ -219,7 +225,7 @@ fn main() {
         match BillManager::from_str(&input) {
             Some(BillManager::Add) => add_bill(&mut bills),
             Some(BillManager::View) => view_bills(&bills),
-            Some(BillManager::Remove) => println!("Remove"),
+            Some(BillManager::Remove) => remove_bill(&mut bills),
             Some(BillManager::Edit) => println!("Edit"),
             Some(BillManager::Back) => println!("Back"),
             Some(BillManager::Quit) => break,
